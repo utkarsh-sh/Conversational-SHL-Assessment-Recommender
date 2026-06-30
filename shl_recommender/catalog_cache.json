@@ -1,0 +1,174 @@
+{
+  "assessments": {
+    "java_8_new": {
+      "name": "Java 8 (New)",
+      "url": "https://www.shl.com/solutions/products/java-8-new/",
+      "description": "SHL Java 8 (New) assessment",
+      "test_type": "K",
+      "id": "java_8_new"
+    },
+    "opq32r": {
+      "name": "OPQ32r",
+      "url": "https://www.shl.com/solutions/products/opq32r/",
+      "description": "SHL OPQ32r assessment",
+      "test_type": "P",
+      "id": "opq32r"
+    },
+    "gsa": {
+      "name": "GSA",
+      "url": "https://www.shl.com/solutions/products/gsa/",
+      "description": "SHL GSA assessment",
+      "test_type": "G",
+      "id": "gsa"
+    },
+    "verify_general_ability": {
+      "name": "Verify General Ability",
+      "url": "https://www.shl.com/solutions/products/verify-general-ability/",
+      "description": "SHL Verify General Ability assessment",
+      "test_type": "G",
+      "id": "verify_general_ability"
+    },
+    "verify_logical": {
+      "name": "Verify Logical",
+      "url": "https://www.shl.com/solutions/products/verify-logical/",
+      "description": "SHL Verify Logical assessment",
+      "test_type": "G",
+      "id": "verify_logical"
+    },
+    "verify_mechanical": {
+      "name": "Verify Mechanical",
+      "url": "https://www.shl.com/solutions/products/verify-mechanical/",
+      "description": "SHL Verify Mechanical assessment",
+      "test_type": "G",
+      "id": "verify_mechanical"
+    },
+    "verify_numerical": {
+      "name": "Verify Numerical",
+      "url": "https://www.shl.com/solutions/products/verify-numerical/",
+      "description": "SHL Verify Numerical assessment",
+      "test_type": "N",
+      "id": "verify_numerical"
+    },
+    "verify_verbal": {
+      "name": "Verify Verbal",
+      "url": "https://www.shl.com/solutions/products/verify-verbal/",
+      "description": "SHL Verify Verbal assessment",
+      "test_type": "V",
+      "id": "verify_verbal"
+    },
+    "verify_professional_interaction": {
+      "name": "Verify Professional Interaction",
+      "url": "https://www.shl.com/solutions/products/verify-professional-interaction/",
+      "description": "SHL Verify Professional Interaction assessment",
+      "test_type": "G",
+      "id": "verify_professional_interaction"
+    },
+    "python": {
+      "name": "Python",
+      "url": "https://www.shl.com/solutions/products/python/",
+      "description": "SHL Python assessment",
+      "test_type": "K",
+      "id": "python"
+    },
+    "c++": {
+      "name": "C++",
+      "url": "https://www.shl.com/solutions/products/cpp/",
+      "description": "SHL C++ assessment",
+      "test_type": "G",
+      "id": "c++"
+    },
+    "javascript": {
+      "name": "JavaScript",
+      "url": "https://www.shl.com/solutions/products/javascript/",
+      "description": "SHL JavaScript assessment",
+      "test_type": "K",
+      "id": "javascript"
+    }
+  },
+  "by_name": {
+    "Java 8 (New)": {
+      "name": "Java 8 (New)",
+      "url": "https://www.shl.com/solutions/products/java-8-new/",
+      "description": "SHL Java 8 (New) assessment",
+      "test_type": "K",
+      "id": "java_8_new"
+    },
+    "OPQ32r": {
+      "name": "OPQ32r",
+      "url": "https://www.shl.com/solutions/products/opq32r/",
+      "description": "SHL OPQ32r assessment",
+      "test_type": "P",
+      "id": "opq32r"
+    },
+    "GSA": {
+      "name": "GSA",
+      "url": "https://www.shl.com/solutions/products/gsa/",
+      "description": "SHL GSA assessment",
+      "test_type": "G",
+      "id": "gsa"
+    },
+    "Verify General Ability": {
+      "name": "Verify General Ability",
+      "url": "https://www.shl.com/solutions/products/verify-general-ability/",
+      "description": "SHL Verify General Ability assessment",
+      "test_type": "G",
+      "id": "verify_general_ability"
+    },
+    "Verify Logical": {
+      "name": "Verify Logical",
+      "url": "https://www.shl.com/solutions/products/verify-logical/",
+      "description": "SHL Verify Logical assessment",
+      "test_type": "G",
+      "id": "verify_logical"
+    },
+    "Verify Mechanical": {
+      "name": "Verify Mechanical",
+      "url": "https://www.shl.com/solutions/products/verify-mechanical/",
+      "description": "SHL Verify Mechanical assessment",
+      "test_type": "G",
+      "id": "verify_mechanical"
+    },
+    "Verify Numerical": {
+      "name": "Verify Numerical",
+      "url": "https://www.shl.com/solutions/products/verify-numerical/",
+      "description": "SHL Verify Numerical assessment",
+      "test_type": "N",
+      "id": "verify_numerical"
+    },
+    "Verify Verbal": {
+      "name": "Verify Verbal",
+      "url": "https://www.shl.com/solutions/products/verify-verbal/",
+      "description": "SHL Verify Verbal assessment",
+      "test_type": "V",
+      "id": "verify_verbal"
+    },
+    "Verify Professional Interaction": {
+      "name": "Verify Professional Interaction",
+      "url": "https://www.shl.com/solutions/products/verify-professional-interaction/",
+      "description": "SHL Verify Professional Interaction assessment",
+      "test_type": "G",
+      "id": "verify_professional_interaction"
+    },
+    "Python": {
+      "name": "Python",
+      "url": "https://www.shl.com/solutions/products/python/",
+      "description": "SHL Python assessment",
+      "test_type": "K",
+      "id": "python"
+    },
+    "C++": {
+      "name": "C++",
+      "url": "https://www.shl.com/solutions/products/cpp/",
+      "description": "SHL C++ assessment",
+      "test_type": "G",
+      "id": "c++"
+    },
+    "JavaScript": {
+      "name": "JavaScript",
+      "url": "https://www.shl.com/solutions/products/javascript/",
+      "description": "SHL JavaScript assessment",
+      "test_type": "K",
+      "id": "javascript"
+    }
+  }
+}
