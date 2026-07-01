@@ -1,9 +1,7 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List, Optional, Literal
 from contextlib import asynccontextmanager
-import os
 from dotenv import load_dotenv
 
 # Import our modules
@@ -84,20 +82,27 @@ async def chat(request: ChatRequest):
         # Get agent response
         response = await agent.process_conversation(messages)
         
-        # Validate recommendations are in catalog
+        # Validate recommendations against canonical catalog records.
         validated_recs = []
         for rec in response.get("recommendations", []):
-            if catalog_manager.validate_assessment(rec["name"]):
-                validated_recs.append(Recommendation(**rec))
+            canonical = catalog_manager.canonicalize_recommendation(rec)
+            if canonical:
+                validated_recs.append(Recommendation(**canonical))
         
         return ChatResponse(
             reply=response["reply"],
             recommendations=validated_recs,
             end_of_conversation=response.get("end_of_conversation", False)
         )
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Error in chat endpoint: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return ChatResponse(
+            reply="I can help with SHL assessment recommendations, but I need a valid conversation message to continue.",
+            recommendations=[],
+            end_of_conversation=False
+        )
 
 
 if __name__ == "__main__":

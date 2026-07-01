@@ -3,35 +3,55 @@
 import json
 import re
 from typing import List, Dict, Optional
-from bs4 import BeautifulSoup
-import httpx
+
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
+
+try:
+    import httpx
+except ImportError:
+    httpx = None
 
 
 class CatalogScraper:
     """Enhanced scraper for SHL catalog."""
     
-    CATALOG_URL = "https://www.shl.com/solutions/products/productcatalog/"
+    CATALOG_URL = "https://www.shl.com/solutions/products/product-catalog/"
     
     @staticmethod
     async def scrape_catalog() -> List[Dict[str, str]]:
         """Scrape the SHL product catalog."""
+        if not BeautifulSoup or not httpx:
+            print("Scraper dependencies missing; using seed catalog")
+            return []
         try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.get(
-                    CatalogScraper.CATALOG_URL,
-                    headers={
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-                    }
-                )
-                response.raise_for_status()
-                
-                soup = BeautifulSoup(response.content, 'html.parser')
+            async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
                 assessments = []
-                
-                # Try multiple parsing strategies
-                assessments.extend(CatalogScraper._parse_product_cards(soup))
-                assessments.extend(CatalogScraper._parse_product_links(soup))
-                assessments.extend(CatalogScraper._parse_product_tables(soup))
+                for start in range(0, 1000, 12):
+                    response = await client.get(
+                        CatalogScraper.CATALOG_URL,
+                        params={"start": start, "type": 1},
+                        headers={
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                        }
+                    )
+                    response.raise_for_status()
+
+                    soup = BeautifulSoup(response.content, 'html.parser')
+                    page_assessments = []
+                    page_assessments.extend(CatalogScraper._parse_product_tables(soup))
+                    page_assessments.extend(CatalogScraper._parse_product_cards(soup))
+                    page_assessments.extend(CatalogScraper._parse_product_links(soup))
+                    if not page_assessments:
+                        break
+
+                    before = len(assessments)
+                    assessments.extend(page_assessments)
+                    unique_names = {item.get("name", "").lower() for item in assessments}
+                    if len(unique_names) == before:
+                        break
                 
                 # Remove duplicates
                 unique_assessments = {}
@@ -98,17 +118,17 @@ class CatalogScraper:
             for row in rows:
                 cols = row.find_all(["td", "th"])
                 if len(cols) >= 2:
-                    name = cols[0].get_text(strip=True)
-                    
-                    # Look for link
-                    link = cols[0].find("a")
+                    link = row.find("a", href=True)
                     url = link.get("href", "") if link else ""
+                    name = link.get_text(strip=True) if link else cols[0].get_text(strip=True)
                     
                     if name and url:
+                        cells_text = [col.get_text(" ", strip=True) for col in cols]
                         assessment = {
                             "name": name,
                             "url": url if url.startswith("http") else f"https://www.shl.com{url}",
-                            "description": cols[1].get_text(strip=True) if len(cols) > 1 else name
+                            "description": " | ".join(cells_text),
+                            "test_type": cells_text[-1] if cells_text else ""
                         }
                         assessments.append(assessment)
         
@@ -156,6 +176,7 @@ class CatalogScraper:
 # Common SHL assessments for fallback/seed data
 SEED_ASSESSMENTS = {
     "Java 8 (New)": "https://www.shl.com/solutions/products/java-8-new/",
+    "Java 8": "https://www.shl.com/solutions/products/java-8/",
     "OPQ32r": "https://www.shl.com/solutions/products/opq32r/",
     "GSA": "https://www.shl.com/solutions/products/gsa/",
     "Verify General Ability": "https://www.shl.com/solutions/products/verify-general-ability/",
@@ -167,4 +188,11 @@ SEED_ASSESSMENTS = {
     "Python": "https://www.shl.com/solutions/products/python/",
     "C++": "https://www.shl.com/solutions/products/cpp/",
     "JavaScript": "https://www.shl.com/solutions/products/javascript/",
+    "SQL Server": "https://www.shl.com/solutions/products/sql-server/",
+    "HTML/CSS": "https://www.shl.com/solutions/products/html-css/",
+    "C#": "https://www.shl.com/solutions/products/c-sharp/",
+    ".NET Framework": "https://www.shl.com/solutions/products/net-framework/",
+    "Project Management": "https://www.shl.com/solutions/products/project-management/",
+    "Sales Achievement Predictor": "https://www.shl.com/solutions/products/sales-achievement-predictor/",
+    "Customer Service Assessment": "https://www.shl.com/solutions/products/customer-service-assessment/",
 }

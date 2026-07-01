@@ -1,8 +1,13 @@
 import json
+import os
 import re
-from typing import List, Dict, Optional, Any
-from anthropic import Anthropic
+from typing import List, Dict, Any
 import asyncio
+
+try:
+    from anthropic import Anthropic
+except ImportError:
+    Anthropic = None
 
 
 class ConversationalAgent:
@@ -10,16 +15,19 @@ class ConversationalAgent:
     
     def __init__(self, catalog_manager):
         self.catalog = catalog_manager
-        self.client = Anthropic()
-        self.system_prompt = self._build_system_prompt()
+        self.client = Anthropic() if Anthropic and os.getenv("ANTHROPIC_API_KEY") else None
+        self.model = os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022")
     
     def _build_system_prompt(self) -> str:
         """Build the system prompt for the agent."""
-        catalog_json = self._prepare_catalog_json()
+        return self._build_system_prompt_for_candidates(self.catalog.get_all_assessments())
+
+    def _build_system_prompt_for_candidates(self, candidates: List[Dict[str, Any]]) -> str:
+        catalog_json = self._prepare_catalog_json(candidates)
         
         return f"""You are an expert SHL assessment recommendation specialist. Your role is to help hiring managers and recruiters find the right SHL assessments for their hiring needs through a natural conversation.
 
-## Available SHL Assessments Catalog
+## Candidate SHL Assessments
 {catalog_json}
 
 ## Your Core Responsibilities
@@ -31,7 +39,7 @@ class ConversationalAgent:
    - Whether they need technical, personality, verbal, numerical, or general ability assessments
    - Any specific constraints or preferences
 
-2. **Make Grounded Recommendations**: Once you have sufficient context (usually after 2-3 clarifying turns), provide 1-10 relevant assessments. Format as JSON with exact catalog names:
+2. **Make Grounded Recommendations**: Once you have sufficient context, provide 1-10 relevant assessments. Format as JSON with exact catalog names:
    {{"recommendations": [{{"name": "EXACT_CATALOG_NAME", "url": "https://...", "test_type": "K"}}]}}
 
 3. **Handle Refinements**: When users change constraints mid-conversation, update recommendations based on new criteria.
@@ -61,18 +69,17 @@ Your response MUST be JSON:
 
 Turn 1: Understand the role and basic needs
 Turn 2: Clarify seniority and specific requirements
-Turn 3: Confirm assessment types (technical vs behavioral)
-Turn 4+: Make recommendations or refine based on feedback
+Turn 3+: Make recommendations or refine based on feedback
 
-Aim to recommend by turn 4. Track all user constraints and preferences.
+Only recommend from the candidate list. Track all user constraints and preferences.
 """
     
-    def _prepare_catalog_json(self) -> str:
-        """Prepare the catalog as JSON for the prompt."""
-        assessments = self.catalog.get_all_assessments()
+    def _prepare_catalog_json(self, candidates: List[Dict[str, Any]] = None) -> str:
+        """Prepare candidate catalog records as JSON for the prompt."""
+        assessments = candidates or self.catalog.get_all_assessments()
         catalog_summary = {
             "total_assessments": len(assessments),
-            "assessments": assessments[:20]  # Include first 20 for prompt, avoid token limits
+            "assessments": assessments[:40],
         }
         return json.dumps(catalog_summary, indent=2)
     
@@ -86,34 +93,52 @@ Aim to recommend by turn 4. Track all user constraints and preferences.
                 self._sync_process_conversation,
                 messages
             )
-            return result
+            return self._canonicalize_response(result)
         except Exception as e:
             print(f"Error processing conversation: {e}")
-            return {
-                "reply": "I encountered an error processing your request. Please try again.",
-                "recommendations": [],
-                "end_of_conversation": False
-            }
+            return self._deterministic_response(messages)
     
     def _sync_process_conversation(self, messages: List[Dict[str, str]]) -> Dict[str, Any]:
         """Synchronous conversation processing."""
-        # Check conversation length limit
-        if len(messages) >= 8:
+        if not self._is_in_scope(messages):
             return {
+                "reply": "I can only help with SHL assessment selection and comparisons. Please share the role, skills, seniority, or assessment constraints you want to evaluate.",
+                "recommendations": [],
+                "end_of_conversation": False,
+            }
+
+        if len(messages) >= 8:
+            response = {
                 "reply": "We've reached the conversation limit. Here are the best assessments for your needs based on our discussion.",
                 "recommendations": self._extract_recommendations_from_context(messages),
-                "end_of_conversation": True
+                "end_of_conversation": True,
             }
+            if not response["recommendations"]:
+                response["recommendations"] = self._retrieve_recommendations(messages, limit=5)
+            return response
         
-        # Add system prompt
-        system_messages = [{"role": "user", "content": self.system_prompt}]
+        if self._is_vague(messages):
+            return {
+                "reply": "I can help with that. What role are you hiring for, what skills or competencies matter most, and what seniority level should the assessment target?",
+                "recommendations": [],
+                "end_of_conversation": False,
+            }
+
+        if self._is_comparison_request(messages):
+            return self._compare_assessments(messages)
+
+        if not self.client:
+            return self._deterministic_response(messages)
+
+        candidates = self._retrieve_candidates(messages, limit=40)
+        system_prompt = self._build_system_prompt_for_candidates(candidates)
         
-        # Create API call with conversation history
         response = self.client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model=self.model,
             max_tokens=1000,
-            system=self.system_prompt,
-            messages=messages
+            system=system_prompt,
+            messages=messages,
+            timeout=25,
         )
         
         agent_reply = response.content[0].text
@@ -122,7 +147,7 @@ Aim to recommend by turn 4. Track all user constraints and preferences.
         parsed = self._parse_agent_response(agent_reply, messages)
         
         return parsed
-    
+
     def _parse_agent_response(self, response_text: str, messages: List[Dict]) -> Dict[str, Any]:
         """Parse agent response to extract reply, recommendations, and conversation status."""
         recommendations = []
@@ -142,15 +167,10 @@ Aim to recommend by turn 4. Track all user constraints and preferences.
                 
                 if "recommendations" in json_data:
                     raw_recommendations = json_data["recommendations"]
-                    
-                    # Validate and clean recommendations
                     for rec in raw_recommendations:
-                        if self.catalog.validate_assessment(rec.get("name", "")):
-                            recommendations.append({
-                                "name": rec["name"],
-                                "url": rec.get("url", ""),
-                                "test_type": rec.get("test_type", "G")
-                            })
+                        canonical = self.catalog.canonicalize_recommendation(rec)
+                        if canonical:
+                            recommendations.append(canonical)
                     
                     # Remove JSON from reply text
                     reply_text = response_text[:json_matches[-1].find(json_str)].strip()
@@ -193,15 +213,156 @@ Aim to recommend by turn 4. Track all user constraints and preferences.
                     if json_matches:
                         json_data = json.loads(json_matches[-1])
                         if "recommendations" in json_data:
-                            return json_data["recommendations"][:10]
+                            return [
+                                rec for rec in (
+                                    self.catalog.canonicalize_recommendation(item)
+                                    for item in json_data["recommendations"]
+                                )
+                                if rec
+                            ][:10]
                 except:
                     pass
         
-        # Return general recommendations as fallback
+        return self._retrieve_recommendations(messages, limit=5)
+
+    def _canonicalize_response(self, response: Dict[str, Any]) -> Dict[str, Any]:
+        recommendations = []
+        for rec in response.get("recommendations", []):
+            canonical = self.catalog.canonicalize_recommendation(rec)
+            if canonical and canonical not in recommendations:
+                recommendations.append(canonical)
+        return {
+            "reply": response.get("reply", "").strip() or "I can help you choose SHL assessments.",
+            "recommendations": recommendations[:10],
+            "end_of_conversation": bool(response.get("end_of_conversation", False)),
+        }
+
+    def _deterministic_response(self, messages: List[Dict[str, str]]) -> Dict[str, Any]:
+        recommendations = self._retrieve_recommendations(messages, limit=5)
+        if not recommendations:
+            return {
+                "reply": "I can help with SHL assessment recommendations. Please share the target role, core skills, seniority level, and whether you need technical, cognitive, or personality assessments.",
+                "recommendations": [],
+                "end_of_conversation": False,
+            }
+        role = self._latest_user_text(messages)
+        return {
+            "reply": f"Based on the SHL catalog matches for your request, here are {len(recommendations)} assessments to consider.",
+            "recommendations": recommendations,
+            "end_of_conversation": len(messages) >= 3 or bool(role),
+        }
+
+    def _retrieve_recommendations(self, messages: List[Dict[str, str]], limit: int = 5) -> List[Dict[str, str]]:
+        candidates = self._retrieve_candidates(messages, limit=limit)
         return [
             {
-                "name": "OPQ32r",
-                "url": "https://www.shl.com/solutions/products/opq32r/",
-                "test_type": "P"
+                "name": item["name"],
+                "url": item["url"],
+                "test_type": item["test_type"],
             }
+            for item in candidates[:limit]
         ]
+
+    def _retrieve_candidates(self, messages: List[Dict[str, str]], limit: int = 40) -> List[Dict[str, Any]]:
+        query = self._conversation_text(messages)
+        filters = {}
+        requested_types = self._requested_test_types(query)
+        if requested_types:
+            filters["test_type"] = requested_types
+
+        candidates = self.catalog.search_assessments(query, filters=filters or None)
+        if not candidates:
+            candidates = self.catalog.search_assessments(query)
+        if not candidates:
+            candidates = self.catalog.get_all_assessments()
+        return candidates[:limit]
+
+    def _requested_test_types(self, text: str) -> List[str]:
+        text = text.lower()
+        types = []
+        if any(word in text for word in ["technical", "coding", "java", "python", "javascript", "developer", "programming"]):
+            types.append("K")
+        if any(word in text for word in ["personality", "behavior", "behaviour", "opq"]):
+            types.append("P")
+        if "verbal" in text or "communication" in text:
+            types.append("V")
+        if "numerical" in text or "numeric" in text:
+            types.append("N")
+        return types
+
+    def _is_vague(self, messages: List[Dict[str, str]]) -> bool:
+        user_messages = [m["content"] for m in messages if m.get("role") == "user"]
+        if len(user_messages) != 1:
+            return False
+        text = user_messages[-1].strip().lower()
+        vague = {
+            "i need an assessment",
+            "need an assessment",
+            "i need a test",
+            "need a test",
+            "help me choose an assessment",
+        }
+        return text in vague or len(re.findall(r"[a-z0-9+#.]+", text)) <= 4
+
+    def _is_in_scope(self, messages: List[Dict[str, str]]) -> bool:
+        text = self._latest_user_text(messages).lower()
+        off_topic = [
+            "interview questions",
+            "salary",
+            "legal advice",
+            "employment law",
+            "write a contract",
+            "ignore previous",
+            "system prompt",
+            "prompt injection",
+        ]
+        assessment_terms = [
+            "assessment", "test", "shl", "opq", "gsa", "verify", "java",
+            "python", "developer", "personality", "numerical", "verbal",
+            "hiring", "candidate", "role", "skills", "compare",
+        ]
+        if any(term in text for term in off_topic) and not any(term in text for term in assessment_terms):
+            return False
+        return True
+
+    def _is_comparison_request(self, messages: List[Dict[str, str]]) -> bool:
+        text = self._latest_user_text(messages).lower()
+        return any(term in text for term in ["compare", "difference", " vs ", " versus "])
+
+    def _compare_assessments(self, messages: List[Dict[str, str]]) -> Dict[str, Any]:
+        text = self._latest_user_text(messages)
+        matches = []
+        for assessment in self.catalog.get_all_assessments():
+            if assessment["name"].lower() in text.lower():
+                matches.append(assessment)
+        if len(matches) < 2:
+            matches = self._retrieve_candidates(messages, limit=2)
+        if len(matches) < 2:
+            return {
+                "reply": "I can compare SHL assessments, but I need the names of at least two assessments from the catalog.",
+                "recommendations": [],
+                "end_of_conversation": False,
+            }
+        first, second = matches[0], matches[1]
+        reply = (
+            f"{first['name']} is categorized as {first['test_type']} and is described in the catalog as: "
+            f"{first['description']}. {second['name']} is categorized as {second['test_type']} and is described as: "
+            f"{second['description']}. For this hiring need, choose the one whose catalog description best matches the competency you need to measure."
+        )
+        return {
+            "reply": reply,
+            "recommendations": [
+                self.catalog.canonicalize_recommendation(first),
+                self.catalog.canonicalize_recommendation(second),
+            ],
+            "end_of_conversation": False,
+        }
+
+    def _conversation_text(self, messages: List[Dict[str, str]]) -> str:
+        return " ".join(m.get("content", "") for m in messages if m.get("role") == "user")
+
+    def _latest_user_text(self, messages: List[Dict[str, str]]) -> str:
+        for message in reversed(messages):
+            if message.get("role") == "user":
+                return message.get("content", "")
+        return ""

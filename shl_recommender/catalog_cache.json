@@ -7,6 +7,13 @@
       "test_type": "K",
       "id": "java_8_new"
     },
+    "java_8": {
+      "name": "Java 8",
+      "url": "https://www.shl.com/solutions/products/java-8/",
+      "description": "SHL Java 8 assessment",
+      "test_type": "K",
+      "id": "java_8"
+    },
     "opq32r": {
       "name": "OPQ32r",
       "url": "https://www.shl.com/solutions/products/opq32r/",
@@ -70,12 +77,12 @@
       "test_type": "K",
       "id": "python"
     },
-    "c++": {
+    "cpp": {
       "name": "C++",
       "url": "https://www.shl.com/solutions/products/cpp/",
       "description": "SHL C++ assessment",
-      "test_type": "G",
-      "id": "c++"
+      "test_type": "K",
+      "id": "cpp"
     },
     "javascript": {
       "name": "JavaScript",
@@ -83,6 +90,55 @@
       "description": "SHL JavaScript assessment",
       "test_type": "K",
       "id": "javascript"
+    },
+    "sql_server": {
+      "name": "SQL Server",
+      "url": "https://www.shl.com/solutions/products/sql-server/",
+      "description": "SHL SQL Server assessment",
+      "test_type": "K",
+      "id": "sql_server"
+    },
+    "html_css": {
+      "name": "HTML/CSS",
+      "url": "https://www.shl.com/solutions/products/html-css/",
+      "description": "SHL HTML/CSS assessment",
+      "test_type": "K",
+      "id": "html_css"
+    },
+    "csharp": {
+      "name": "C#",
+      "url": "https://www.shl.com/solutions/products/c-sharp/",
+      "description": "SHL C# assessment",
+      "test_type": "K",
+      "id": "csharp"
+    },
+    "dotnet_framework": {
+      "name": ".NET Framework",
+      "url": "https://www.shl.com/solutions/products/net-framework/",
+      "description": "SHL .NET Framework assessment",
+      "test_type": "K",
+      "id": "dotnet_framework"
+    },
+    "project_management": {
+      "name": "Project Management",
+      "url": "https://www.shl.com/solutions/products/project-management/",
+      "description": "SHL Project Management assessment",
+      "test_type": "G",
+      "id": "project_management"
+    },
+    "sales_achievement_predictor": {
+      "name": "Sales Achievement Predictor",
+      "url": "https://www.shl.com/solutions/products/sales-achievement-predictor/",
+      "description": "SHL Sales Achievement Predictor assessment",
+      "test_type": "G",
+      "id": "sales_achievement_predictor"
+    },
+    "customer_service_assessment": {
+      "name": "Customer Service Assessment",
+      "url": "https://www.shl.com/solutions/products/customer-service-assessment/",
+      "description": "SHL Customer Service Assessment assessment",
+      "test_type": "G",
+      "id": "customer_service_assessment"
     }
   },
   "by_name": {
@@ -92,6 +148,13 @@
       "description": "SHL Java 8 (New) assessment",
       "test_type": "K",
       "id": "java_8_new"
+    },
+    "Java 8": {
+      "name": "Java 8",
+      "url": "https://www.shl.com/solutions/products/java-8/",
+      "description": "SHL Java 8 assessment",
+      "test_type": "K",
+      "id": "java_8"
     },
     "OPQ32r": {
       "name": "OPQ32r",
@@ -160,8 +223,8 @@
       "name": "C++",
       "url": "https://www.shl.com/solutions/products/cpp/",
       "description": "SHL C++ assessment",
-      "test_type": "G",
-      "id": "c++"
+      "test_type": "K",
+      "id": "cpp"
     },
     "JavaScript": {
       "name": "JavaScript",
@@ -169,6 +232,55 @@
       "description": "SHL JavaScript assessment",
       "test_type": "K",
       "id": "javascript"
+    },
+    "SQL Server": {
+      "name": "SQL Server",
+      "url": "https://www.shl.com/solutions/products/sql-server/",
+      "description": "SHL SQL Server assessment",
+      "test_type": "K",
+      "id": "sql_server"
+    },
+    "HTML/CSS": {
+      "name": "HTML/CSS",
+      "url": "https://www.shl.com/solutions/products/html-css/",
+      "description": "SHL HTML/CSS assessment",
+      "test_type": "K",
+      "id": "html_css"
+    },
+    "C#": {
+      "name": "C#",
+      "url": "https://www.shl.com/solutions/products/c-sharp/",
+      "description": "SHL C# assessment",
+      "test_type": "K",
+      "id": "csharp"
+    },
+    ".NET Framework": {
+      "name": ".NET Framework",
+      "url": "https://www.shl.com/solutions/products/net-framework/",
+      "description": "SHL .NET Framework assessment",
+      "test_type": "K",
+      "id": "dotnet_framework"
+    },
+    "Project Management": {
+      "name": "Project Management",
+      "url": "https://www.shl.com/solutions/products/project-management/",
+      "description": "SHL Project Management assessment",
+      "test_type": "G",
+      "id": "project_management"
+    },
+    "Sales Achievement Predictor": {
+      "name": "Sales Achievement Predictor",
+      "url": "https://www.shl.com/solutions/products/sales-achievement-predictor/",
+      "description": "SHL Sales Achievement Predictor assessment",
+      "test_type": "G",
+      "id": "sales_achievement_predictor"
+    },
+    "Customer Service Assessment": {
+      "name": "Customer Service Assessment",
+      "url": "https://www.shl.com/solutions/products/customer-service-assessment/",
+      "description": "SHL Customer Service Assessment assessment",
+      "test_type": "G",
+      "id": "customer_service_assessment"
     }
   }
 }

@@ -1,8 +1,6 @@
-import asyncio
 import json
+import re
 from typing import List, Dict, Optional, Any
-from bs4 import BeautifulSoup
-import httpx
 import os
 from pathlib import Path
 from catalog_scraper import CatalogScraper, SEED_ASSESSMENTS
@@ -11,8 +9,8 @@ from catalog_scraper import CatalogScraper, SEED_ASSESSMENTS
 class CatalogManager:
     """Manages the SHL assessment catalog."""
     
-    CATALOG_URL = "https://www.shl.com/solutions/products/productcatalog/"
-    CACHE_FILE = "catalog_cache.json"
+    CATALOG_URL = "https://www.shl.com/solutions/products/product-catalog/"
+    CACHE_FILE = Path(__file__).with_name("catalog_cache.json")
     
     def __init__(self):
         self.assessments: Dict[str, Dict[str, Any]] = {}
@@ -21,12 +19,11 @@ class CatalogManager:
     async def load_catalog(self):
         """Load catalog from cache or fetch from SHL website."""
         # Try to load from cache first
-        if os.path.exists(self.CACHE_FILE):
+        if self.CACHE_FILE.exists():
             try:
-                with open(self.CACHE_FILE, 'r') as f:
+                with self.CACHE_FILE.open("r", encoding="utf-8") as f:
                     data = json.load(f)
-                    self.assessments = data.get("assessments", {})
-                    self.assessment_by_name = data.get("by_name", {})
+                    self._load_items(data.get("assessments", {}).values())
                     print(f"Loaded {len(self.assessments)} assessments from cache")
                     return
             except Exception as e:
@@ -43,19 +40,7 @@ class CatalogManager:
             assessments_data = await CatalogScraper.scrape_catalog()
             
             if assessments_data:
-                for item in assessments_data:
-                    assessment_id = item["name"].lower().replace(" ", "_").replace("(", "").replace(")", "")
-                    description = item.get("description", item["name"])
-                    
-                    self.assessments[assessment_id] = {
-                        "name": item["name"],
-                        "url": item["url"],
-                        "description": description,
-                        "test_type": self._infer_test_type(item["name"], description),
-                        "id": assessment_id
-                    }
-                    self.assessment_by_name[item["name"]] = self.assessments[assessment_id]
-                
+                self._load_items(assessments_data)
                 print(f"Scraped {len(self.assessments)} assessments from SHL catalog")
                 return
             
@@ -67,52 +52,45 @@ class CatalogManager:
             print(f"Error fetching catalog: {e}")
             self._load_fallback_catalog()
     
-    def _parse_catalog_html(self, soup: BeautifulSoup):
-        """Parse HTML to extract assessment information."""
-        # This will depend on the actual HTML structure of the SHL catalog
-        # For now, implementing a structure that can be filled with real data
-        
-        # Look for products in the catalog
-        product_sections = soup.find_all(class_=["product", "assessment", "solution"])
-        
-        for section in product_sections:
-            try:
-                # Extract key information
-                name_elem = section.find(class_=["product-name", "title", "heading"])
-                url_elem = section.find("a")
-                desc_elem = section.find(class_=["description", "product-desc"])
-                
-                if name_elem and url_elem:
-                    name = name_elem.get_text(strip=True)
-                    url = url_elem.get("href", "")
-                    description = desc_elem.get_text(strip=True) if desc_elem else ""
-                    
-                    # Determine test type based on name/description
-                    test_type = self._infer_test_type(name, description)
-                    
-                    # Make URL absolute if needed
-                    if url and not url.startswith("http"):
-                        url = "https://www.shl.com" + url if url.startswith("/") else url
-                    
-                    if name and url:
-                        assessment_id = name.lower().replace(" ", "_").replace("(", "").replace(")", "")
-                        self.assessments[assessment_id] = {
-                            "name": name,
-                            "url": url,
-                            "description": description,
-                            "test_type": test_type,
-                            "id": assessment_id
-                        }
-                        self.assessment_by_name[name] = self.assessments[assessment_id]
-            except Exception as e:
-                print(f"Error parsing product section: {e}")
+    def _load_items(self, items):
+        """Load normalized catalog records into lookup maps."""
+        self.assessments = {}
+        self.assessment_by_name = {}
+
+        for item in items:
+            name = self._clean_text(item.get("name", ""))
+            url = item.get("url", "")
+            if not name or not url:
+                continue
+
+            description = self._clean_text(item.get("description") or name)
+            test_type = item.get("test_type") or self._infer_test_type(name, description)
+            assessment_id = self._make_id(name)
+            record = {
+                "name": name,
+                "url": url,
+                "description": description,
+                "test_type": test_type,
+                "id": assessment_id,
+            }
+            self.assessments[assessment_id] = record
+            self.assessment_by_name[name] = record
+
+    def _make_id(self, name: str) -> str:
+        value = name.lower()
+        value = value.replace("c++", "cpp")
+        value = value.replace("c#", "csharp")
+        value = value.replace(".net", "dotnet")
+        return re.sub(r"[^a-z0-9]+", "_", value).strip("_")
+
+    def _clean_text(self, value: str) -> str:
+        return re.sub(r"\s+", " ", value or "").strip()
     
     def _infer_test_type(self, name: str, description: str) -> str:
         """Infer test type from name and description."""
         text = (name + " " + description).lower()
-        
         # K = Knowledge/Technical
-        if any(word in text for word in ["java", "javascript", "python", "coding", "technical", "knowledge", "skill"]):
+        if any(word in text for word in ["java", "javascript", "python", "c++", "c#", ".net", "html", "css", "sql", "coding", "technical", "knowledge", "skill"]):
             return "K"
         
         # P = Personality
@@ -132,19 +110,14 @@ class CatalogManager:
     
     def _load_fallback_catalog(self):
         """Load a minimal fallback catalog for development/testing."""
-        for name, url in SEED_ASSESSMENTS.items():
-            assessment_id = name.lower().replace(" ", "_").replace("(", "").replace(")", "")
-            description = f"SHL {name} assessment"
-            
-            self.assessments[assessment_id] = {
+        self._load_items(
+            {
                 "name": name,
                 "url": url,
-                "description": description,
-                "test_type": self._infer_test_type(name, description),
-                "id": assessment_id
+                "description": f"SHL {name} assessment",
             }
-            self.assessment_by_name[name] = self.assessments[assessment_id]
-        
+            for name, url in SEED_ASSESSMENTS.items()
+        )
         print(f"Loaded {len(self.assessments)} assessments from seed data")
     
     def _save_cache(self):
@@ -154,7 +127,7 @@ class CatalogManager:
                 "assessments": self.assessments,
                 "by_name": self.assessment_by_name
             }
-            with open(self.CACHE_FILE, 'w') as f:
+            with self.CACHE_FILE.open("w", encoding="utf-8") as f:
                 json.dump(cache_data, f, indent=2)
         except Exception as e:
             print(f"Error saving cache: {e}")
@@ -165,33 +138,67 @@ class CatalogManager:
     
     def get_assessment_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         """Get a specific assessment by name."""
-        return self.assessment_by_name.get(name)
+        if not name:
+            return None
+        exact = self.assessment_by_name.get(name)
+        if exact:
+            return exact
+        normalized = self._make_id(name)
+        return self.assessments.get(normalized)
     
     def validate_assessment(self, name: str) -> bool:
         """Validate that an assessment exists in the catalog."""
-        return name in self.assessment_by_name
+        return self.get_assessment_by_name(name) is not None
+
+    def canonicalize_recommendation(self, rec: Dict[str, Any]) -> Optional[Dict[str, str]]:
+        """Return the catalog-owned recommendation record, ignoring model URLs."""
+        assessment = self.get_assessment_by_name(rec.get("name", ""))
+        if not assessment:
+            return None
+        return {
+            "name": assessment["name"],
+            "url": assessment["url"],
+            "test_type": assessment["test_type"],
+        }
+
+    def validate_recommendation(self, rec: Dict[str, Any]) -> bool:
+        """Validate both name and URL against the catalog."""
+        assessment = self.get_assessment_by_name(rec.get("name", ""))
+        return bool(assessment and rec.get("url") == assessment.get("url"))
     
     def search_assessments(self, query: str, filters: Optional[Dict] = None) -> List[Dict[str, Any]]:
         """Search for assessments based on query and filters."""
-        query_lower = query.lower()
-        results = []
+        query_terms = self._query_terms(query)
+        scored = []
         
         for assessment in self.assessments.values():
-            # Check query match in name and description
-            name_match = query_lower in assessment["name"].lower()
-            desc_match = query_lower in assessment["description"].lower()
-            
-            if name_match or desc_match:
-                # Apply filters if provided
-                if filters:
-                    if "test_type" in filters and assessment["test_type"] not in filters["test_type"]:
-                        continue
-                    if "seniority" in filters and "seniority" not in assessment:
-                        continue
-                
-                results.append(assessment)
+            if filters and "test_type" in filters:
+                allowed = set(filters["test_type"])
+                actual = set(assessment["test_type"].split(","))
+                if not actual & allowed:
+                    continue
+
+            text = f"{assessment['name']} {assessment['description']}".lower()
+            score = 0
+            for term in query_terms:
+                if term in assessment["name"].lower():
+                    score += 4
+                elif term in text:
+                    score += 1
+            if score:
+                scored.append((score, assessment["name"], assessment))
         
-        return results
+        scored.sort(key=lambda item: (-item[0], item[1]))
+        return [item[2] for item in scored]
+
+    def _query_terms(self, query: str) -> List[str]:
+        stop_words = {
+            "a", "an", "and", "are", "for", "i", "in", "is", "need", "of",
+            "the", "to", "with", "who", "we", "hire", "hiring", "assessment",
+            "assessments", "test", "tests", "candidate", "candidates",
+        }
+        terms = re.findall(r"[a-z0-9+#.]+", query.lower())
+        return [term for term in terms if len(term) > 1 and term not in stop_words]
     
     def get_assessments_by_type(self, test_type: str) -> List[Dict[str, Any]]:
         """Get assessments by test type (K, P, V, N, G)."""
