@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional, Literal
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
@@ -59,7 +59,7 @@ class Recommendation(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
-    recommendations: List[Recommendation] = []
+    recommendations: List[Recommendation] = Field(default_factory=list)
     end_of_conversation: bool = False
 
 
@@ -75,6 +75,13 @@ async def chat(request: ChatRequest):
     try:
         if not agent or not catalog_manager:
             raise HTTPException(status_code=503, detail="Service not ready")
+
+        # Assignment hard limit: max 8 total messages (user + assistant)
+        if len(request.messages) > 8:
+            raise HTTPException(
+                status_code=400,
+                detail="Conversation exceeds 8-message limit",
+            )
         
         # Convert messages to dict format
         messages = [{"role": msg.role, "content": msg.content} for msg in request.messages]

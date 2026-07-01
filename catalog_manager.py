@@ -11,6 +11,8 @@ class CatalogManager:
     
     CATALOG_URL = "https://www.shl.com/solutions/products/product-catalog/"
     CACHE_FILE = Path(__file__).with_name("catalog_cache.json")
+    MIN_CATALOG_SIZE = int(os.getenv("MIN_CATALOG_SIZE", "50"))
+    MAX_NAME_LENGTH = 100
     
     def __init__(self):
         self.assessments: Dict[str, Dict[str, Any]] = {}
@@ -18,19 +20,38 @@ class CatalogManager:
         
     async def load_catalog(self):
         """Load catalog from cache or fetch from SHL website."""
+        cached_items = []
+        cached_count = 0
+
         # Try to load from cache first
         if self.CACHE_FILE.exists():
             try:
                 with self.CACHE_FILE.open("r", encoding="utf-8") as f:
                     data = json.load(f)
-                    self._load_items(data.get("assessments", {}).values())
-                    print(f"Loaded {len(self.assessments)} assessments from cache")
-                    return
+                    cached_items = list(data.get("assessments", {}).values())
+                    self._load_items(cached_items)
+                    cached_count = len(self.assessments)
+                    print(f"Loaded {cached_count} assessments from cache")
+
+                    # Keep cache only if it looks complete enough for retrieval quality.
+                    if cached_count >= self.MIN_CATALOG_SIZE:
+                        return
+
+                    print(
+                        f"Cache appears stale/small ({cached_count} < {self.MIN_CATALOG_SIZE}), attempting fresh scrape"
+                    )
             except Exception as e:
                 print(f"Cache load failed: {e}, fetching fresh")
         
         # Fetch and parse catalog
         await self._fetch_and_parse_catalog()
+
+        # Do not replace a better cache with a smaller fallback result.
+        if len(self.assessments) < max(cached_count, 10) and cached_items:
+            print("Fresh scrape produced fewer records than cache; keeping cached catalog")
+            self._load_items(cached_items)
+            return
+
         self._save_cache()
     
     async def _fetch_and_parse_catalog(self):
@@ -63,6 +84,9 @@ class CatalogManager:
             if not name or not url:
                 continue
 
+            if not self._is_individual_assessment_record(name, url):
+                continue
+
             description = self._clean_text(item.get("description") or name)
             test_type = item.get("test_type") or self._infer_test_type(name, description)
             assessment_id = self._make_id(name)
@@ -75,6 +99,46 @@ class CatalogManager:
             }
             self.assessments[assessment_id] = record
             self.assessment_by_name[name] = record
+
+    def _is_individual_assessment_record(self, name: str, url: str) -> bool:
+        """Keep only records that are likely individual SHL assessments in scope."""
+        lowered_url = url.lower()
+        lowered_name = name.lower()
+
+        # Assignment scope: individual test solutions only.
+        allowed_url_patterns = [
+            "/solutions/products/",
+            "/products/assessments/",
+        ]
+        if not any(pattern in lowered_url for pattern in allowed_url_patterns):
+            return False
+
+        blocked_url_terms = [
+            "job-solutions",
+            "/products/video-interviews/",
+            "/products/platform",
+            "/products/technology/",
+            "/products/services/",
+            "/products/job-focused-assessments/",
+            "/products/assessment-center/",
+            "/products/development/",
+        ]
+        if any(term in lowered_url for term in blocked_url_terms):
+            return False
+
+        blocked_name_terms = [
+            "discover",
+            "screen thousands of candidates",
+            "products",
+            "solution",
+        ]
+        if any(term in lowered_name for term in blocked_name_terms):
+            return False
+
+        if len(name) > self.MAX_NAME_LENGTH:
+            return False
+
+        return True
 
     def _make_id(self, name: str) -> str:
         value = name.lower()
@@ -143,6 +207,15 @@ class CatalogManager:
         exact = self.assessment_by_name.get(name)
         if exact:
             return exact
+
+        lowered = name.lower().strip()
+        for assessment_name, assessment in self.assessment_by_name.items():
+            candidate = assessment_name.lower()
+            if lowered == candidate:
+                return assessment
+            if lowered and (lowered in candidate or candidate in lowered):
+                return assessment
+
         normalized = self._make_id(name)
         return self.assessments.get(normalized)
     

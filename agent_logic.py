@@ -100,9 +100,10 @@ Only recommend from the candidate list. Track all user constraints and preferenc
     
     def _sync_process_conversation(self, messages: List[Dict[str, str]]) -> Dict[str, Any]:
         """Synchronous conversation processing."""
-        if not self._is_in_scope(messages):
+        scope_violation = self._scope_violation_reason(messages)
+        if scope_violation:
             return {
-                "reply": "I can only help with SHL assessment selection and comparisons. Please share the role, skills, seniority, or assessment constraints you want to evaluate.",
+                "reply": "I can't help with off-topic or prompt-injection requests. I can only help with SHL assessment selection and comparisons. Please share the role, skills, seniority, or assessment constraints you want to evaluate.",
                 "recommendations": [],
                 "end_of_conversation": False,
             }
@@ -152,37 +153,18 @@ Only recommend from the candidate list. Track all user constraints and preferenc
         """Parse agent response to extract reply, recommendations, and conversation status."""
         recommendations = []
         end_of_conversation = False
-        
-        # Check for JSON-formatted recommendations in the response
-        json_pattern = r'\{[\s\S]*?"recommendations"[\s\S]*?\}'
-        json_matches = re.findall(json_pattern, response_text)
-        
         reply_text = response_text
-        
-        if json_matches:
-            try:
-                # Extract the last JSON match (most likely the recommendations)
-                json_str = json_matches[-1]
-                json_data = json.loads(json_str)
-                
-                if "recommendations" in json_data:
-                    raw_recommendations = json_data["recommendations"]
-                    for rec in raw_recommendations:
-                        canonical = self.catalog.canonicalize_recommendation(rec)
-                        if canonical:
-                            recommendations.append(canonical)
-                    
-                    # Remove JSON from reply text
-                    reply_text = response_text[:json_matches[-1].find(json_str)].strip()
-                    if not reply_text:
-                        reply_text = "Here are the recommended assessments for your needs."
-                    
-                    # If we have recommendations, conversation may be ending
-                    if recommendations and len(messages) >= 4:
-                        end_of_conversation = True
-            
-            except json.JSONDecodeError:
-                pass  # If JSON parsing fails, just use the full response
+
+        parsed_json = self._extract_json_payload(response_text)
+        if parsed_json and "recommendations" in parsed_json:
+            raw_recommendations = parsed_json.get("recommendations", [])
+            for rec in raw_recommendations:
+                canonical = self.catalog.canonicalize_recommendation(rec)
+                if canonical:
+                    recommendations.append(canonical)
+
+            reply_text = parsed_json.get("reply", "").strip() or "Here are the recommended assessments for your needs."
+            end_of_conversation = bool(parsed_json.get("end_of_conversation", False))
         
         # Check for conversation ending signals
         ending_phrases = [
@@ -201,6 +183,27 @@ Only recommend from the candidate list. Track all user constraints and preferenc
             "recommendations": recommendations[:10],  # Max 10 recommendations
             "end_of_conversation": end_of_conversation
         }
+
+    def _extract_json_payload(self, text: str) -> Dict[str, Any] | None:
+        """Extract a JSON object containing recommendations from model text."""
+        stripped = text.strip()
+        if stripped.startswith("{") and stripped.endswith("}"):
+            try:
+                payload = json.loads(stripped)
+                if isinstance(payload, dict):
+                    return payload
+            except json.JSONDecodeError:
+                pass
+
+        matches = re.findall(r"\{[\s\S]*\}", text)
+        for candidate in reversed(matches):
+            try:
+                payload = json.loads(candidate)
+                if isinstance(payload, dict) and "recommendations" in payload:
+                    return payload
+            except json.JSONDecodeError:
+                continue
+        return None
     
     def _extract_recommendations_from_context(self, messages: List[Dict]) -> List[Dict[str, Any]]:
         """Extract recommendations from conversation context as fallback."""
@@ -245,11 +248,10 @@ Only recommend from the candidate list. Track all user constraints and preferenc
                 "recommendations": [],
                 "end_of_conversation": False,
             }
-        role = self._latest_user_text(messages)
         return {
             "reply": f"Based on the SHL catalog matches for your request, here are {len(recommendations)} assessments to consider.",
             "recommendations": recommendations,
-            "end_of_conversation": len(messages) >= 3 or bool(role),
+            "end_of_conversation": self._is_completion_signal(messages),
         }
 
     def _retrieve_recommendations(self, messages: List[Dict[str, str]], limit: int = 5) -> List[Dict[str, str]]:
@@ -265,6 +267,12 @@ Only recommend from the candidate list. Track all user constraints and preferenc
 
     def _retrieve_candidates(self, messages: List[Dict[str, str]], limit: int = 40) -> List[Dict[str, Any]]:
         query = self._conversation_text(messages)
+        latest_user = self._latest_user_text(messages)
+
+        # If user explicitly changes direction, prioritize the latest turn for filtering.
+        if any(token in latest_user.lower() for token in ["instead", "rather", "focus", "actually", "change"]):
+            query = latest_user
+
         filters = {}
         requested_types = self._requested_test_types(query)
         if requested_types:
@@ -304,17 +312,26 @@ Only recommend from the candidate list. Track all user constraints and preferenc
         }
         return text in vague or len(re.findall(r"[a-z0-9+#.]+", text)) <= 4
 
-    def _is_in_scope(self, messages: List[Dict[str, str]]) -> bool:
+    def _scope_violation_reason(self, messages: List[Dict[str, str]]) -> str | None:
         text = self._latest_user_text(messages).lower()
+
+        injection_markers = [
+            "ignore previous",
+            "system prompt",
+            "developer message",
+            "reveal your instructions",
+            "jailbreak",
+            "prompt injection",
+        ]
+        if any(marker in text for marker in injection_markers):
+            return "prompt_injection"
+
         off_topic = [
             "interview questions",
             "salary",
             "legal advice",
             "employment law",
             "write a contract",
-            "ignore previous",
-            "system prompt",
-            "prompt injection",
         ]
         assessment_terms = [
             "assessment", "test", "shl", "opq", "gsa", "verify", "java",
@@ -322,8 +339,11 @@ Only recommend from the candidate list. Track all user constraints and preferenc
             "hiring", "candidate", "role", "skills", "compare",
         ]
         if any(term in text for term in off_topic) and not any(term in text for term in assessment_terms):
-            return False
-        return True
+            return "off_topic"
+        return None
+
+    def _is_in_scope(self, messages: List[Dict[str, str]]) -> bool:
+        return self._scope_violation_reason(messages) is None
 
     def _is_comparison_request(self, messages: List[Dict[str, str]]) -> bool:
         text = self._latest_user_text(messages).lower()
@@ -331,10 +351,7 @@ Only recommend from the candidate list. Track all user constraints and preferenc
 
     def _compare_assessments(self, messages: List[Dict[str, str]]) -> Dict[str, Any]:
         text = self._latest_user_text(messages)
-        matches = []
-        for assessment in self.catalog.get_all_assessments():
-            if assessment["name"].lower() in text.lower():
-                matches.append(assessment)
+        matches = self._extract_assessments_from_text(text)
         if len(matches) < 2:
             matches = self._retrieve_candidates(messages, limit=2)
         if len(matches) < 2:
@@ -357,6 +374,30 @@ Only recommend from the candidate list. Track all user constraints and preferenc
             ],
             "end_of_conversation": False,
         }
+
+    def _extract_assessments_from_text(self, text: str) -> List[Dict[str, Any]]:
+        lowered = text.lower()
+        found = []
+
+        aliases = {
+            "opq": "OPQ32r",
+            "gsa": "GSA",
+        }
+        for alias, canonical_name in aliases.items():
+            if re.search(rf"\b{re.escape(alias)}\b", lowered):
+                assessment = self.catalog.get_assessment_by_name(canonical_name)
+                if assessment and assessment not in found:
+                    found.append(assessment)
+
+        for assessment in self.catalog.get_all_assessments():
+            if assessment["name"].lower() in lowered and assessment not in found:
+                found.append(assessment)
+
+        return found
+
+    def _is_completion_signal(self, messages: List[Dict[str, str]]) -> bool:
+        text = self._latest_user_text(messages).lower()
+        return any(token in text for token in ["thanks", "thank you", "done", "that's all", "looks good"])
 
     def _conversation_text(self, messages: List[Dict[str, str]]) -> str:
         return " ".join(m.get("content", "") for m in messages if m.get("role") == "user")
