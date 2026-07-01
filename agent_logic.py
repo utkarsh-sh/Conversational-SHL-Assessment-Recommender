@@ -333,11 +333,18 @@ Only recommend from the candidate list. Track all user constraints and preferenc
             "employment law",
             "write a contract",
         ]
+        always_refuse = [
+            "legal advice",
+            "employment law",
+            "write a contract",
+        ]
         assessment_terms = [
             "assessment", "test", "shl", "opq", "gsa", "verify", "java",
             "python", "developer", "personality", "numerical", "verbal",
             "hiring", "candidate", "role", "skills", "compare",
         ]
+        if any(term in text for term in always_refuse):
+            return "off_topic"
         if any(term in text for term in off_topic) and not any(term in text for term in assessment_terms):
             return "off_topic"
         return None
@@ -381,6 +388,7 @@ Only recommend from the candidate list. Track all user constraints and preferenc
 
         aliases = {
             "opq": "OPQ32r",
+            "opq32r": "OPQ32r",
             "gsa": "GSA",
         }
         for alias, canonical_name in aliases.items():

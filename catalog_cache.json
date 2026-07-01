@@ -1,258 +1,286 @@
 {
   "assessments": {
-    "occupational_personality_questionnaire_opq": {
-      "name": "Occupational Personality Questionnaire (OPQ)",
-      "url": "https://www.shl.com/products/assessments/personality-assessment/shl-occupational-personality-questionnaire-opq/",
-      "description": "Occupational Personality Questionnaire (OPQ)",
+    "java_8_new": {
+      "name": "Java 8 (New)",
+      "url": "https://www.shl.com/solutions/products/java-8-new/",
+      "description": "SHL Java 8 (New) assessment",
+      "test_type": "K",
+      "id": "java_8_new"
+    },
+    "java_8": {
+      "name": "Java 8",
+      "url": "https://www.shl.com/solutions/products/java-8/",
+      "description": "SHL Java 8 assessment",
+      "test_type": "K",
+      "id": "java_8"
+    },
+    "opq32r": {
+      "name": "OPQ32r",
+      "url": "https://www.shl.com/solutions/products/opq32r/",
+      "description": "SHL OPQ32r assessment",
       "test_type": "P",
-      "id": "occupational_personality_questionnaire_opq"
+      "id": "opq32r"
     },
-    "global_skills_assessment_gsa": {
-      "name": "Global Skills Assessment (GSA)",
-      "url": "https://www.shl.com/products/assessments/behavioral-assessments/global-skills-assessment-gsa/",
-      "description": "Global Skills Assessment (GSA)",
-      "test_type": "K",
-      "id": "global_skills_assessment_gsa"
-    },
-    "job_focused_assessments_jfa": {
-      "name": "Job-Focused Assessments (JFA)",
-      "url": "https://www.shl.com/products/assessments/job-focused-assessments/",
-      "description": "Job-Focused Assessments (JFA)",
+    "gsa": {
+      "name": "GSA",
+      "url": "https://www.shl.com/solutions/products/gsa/",
+      "description": "SHL GSA assessment",
       "test_type": "G",
-      "id": "job_focused_assessments_jfa"
+      "id": "gsa"
     },
-    "motivational_questionnaire_mq": {
-      "name": "Motivational Questionnaire (MQ)",
-      "url": "https://www.shl.com/products/assessments/personality-assessment/shl-motivation-questionnaire-mq/",
-      "description": "Motivational Questionnaire (MQ)",
+    "verify_general_ability": {
+      "name": "Verify General Ability",
+      "url": "https://www.shl.com/solutions/products/verify-general-ability/",
+      "description": "SHL Verify General Ability assessment",
       "test_type": "G",
-      "id": "motivational_questionnaire_mq"
+      "id": "verify_general_ability"
     },
-    "situational_judgment_tests_sjt": {
-      "name": "Situational Judgment Tests (SJT)",
-      "url": "https://www.shl.com/products/assessments/behavioral-assessments/situation-judgement-tests-sjt/",
-      "description": "Situational Judgment Tests (SJT)",
+    "verify_logical": {
+      "name": "Verify Logical",
+      "url": "https://www.shl.com/solutions/products/verify-logical/",
+      "description": "SHL Verify Logical assessment",
       "test_type": "G",
-      "id": "situational_judgment_tests_sjt"
+      "id": "verify_logical"
     },
-    "shl_verify": {
-      "name": "SHL Verify",
-      "url": "https://www.shl.com/products/assessments/cognitive-assessments/",
-      "description": "SHL Verify",
+    "verify_mechanical": {
+      "name": "Verify Mechanical",
+      "url": "https://www.shl.com/solutions/products/verify-mechanical/",
+      "description": "SHL Verify Mechanical assessment",
       "test_type": "G",
-      "id": "shl_verify"
+      "id": "verify_mechanical"
     },
-    "assessments": {
-      "name": "Assessments",
-      "url": "https://www.shl.com/products/assessments/",
-      "description": "Assessments",
-      "test_type": "G",
-      "id": "assessments"
+    "verify_numerical": {
+      "name": "Verify Numerical",
+      "url": "https://www.shl.com/solutions/products/verify-numerical/",
+      "description": "SHL Verify Numerical assessment",
+      "test_type": "N",
+      "id": "verify_numerical"
     },
-    "behavioral_assessments": {
-      "name": "Behavioral Assessments",
-      "url": "https://www.shl.com/products/assessments/behavioral-assessments/",
-      "description": "Behavioral Assessments",
-      "test_type": "P",
-      "id": "behavioral_assessments"
-    },
-    "cognitive_assessments": {
-      "name": "Cognitive Assessments",
-      "url": "https://www.shl.com/products/assessments/cognitive-assessments/",
-      "description": "Cognitive Assessments",
-      "test_type": "G",
-      "id": "cognitive_assessments"
-    },
-    "personality_assessments": {
-      "name": "Personality Assessments",
-      "url": "https://www.shl.com/products/assessments/personality-assessment/",
-      "description": "Personality Assessments",
-      "test_type": "P",
-      "id": "personality_assessments"
-    },
-    "skills_simulations": {
-      "name": "Skills & Simulations",
-      "url": "https://www.shl.com/products/assessments/skills-and-simulations/",
-      "description": "Skills & Simulations",
-      "test_type": "K",
-      "id": "skills_simulations"
-    },
-    "call_center_simulations": {
-      "name": "Call Center Simulations",
-      "url": "https://www.shl.com/products/assessments/skills-and-simulations/call-center-simulations/",
-      "description": "Call Center Simulations",
-      "test_type": "G",
-      "id": "call_center_simulations"
-    },
-    "business_skills": {
-      "name": "Business Skills",
-      "url": "https://www.shl.com/products/assessments/skills-and-simulations/business-skills/",
-      "description": "Business Skills",
-      "test_type": "K",
-      "id": "business_skills"
-    },
-    "coding_simulations": {
-      "name": "Coding Simulations",
-      "url": "https://www.shl.com/products/assessments/skills-and-simulations/coding-simulations/",
-      "description": "Coding Simulations",
-      "test_type": "K",
-      "id": "coding_simulations"
-    },
-    "technical_skills": {
-      "name": "Technical Skills",
-      "url": "https://www.shl.com/products/assessments/skills-and-simulations/technical-skills/",
-      "description": "Technical Skills",
-      "test_type": "K",
-      "id": "technical_skills"
-    },
-    "language_evaluation": {
-      "name": "Language Evaluation",
-      "url": "https://www.shl.com/products/assessments/skills-and-simulations/language-evaluation/",
-      "description": "Language Evaluation",
+    "verify_verbal": {
+      "name": "Verify Verbal",
+      "url": "https://www.shl.com/solutions/products/verify-verbal/",
+      "description": "SHL Verify Verbal assessment",
       "test_type": "V",
-      "id": "language_evaluation"
+      "id": "verify_verbal"
     },
-    "outsourced_assessments_vadc": {
-      "name": "Outsourced Assessments (VADC)",
-      "url": "https://www.shl.com/products/assessments/assessment-and-development-centers/",
-      "description": "Outsourced Assessments (VADC)",
+    "verify_professional_interaction": {
+      "name": "Verify Professional Interaction",
+      "url": "https://www.shl.com/solutions/products/verify-professional-interaction/",
+      "description": "SHL Verify Professional Interaction assessment",
       "test_type": "G",
-      "id": "outsourced_assessments_vadc"
+      "id": "verify_professional_interaction"
     },
-    "learn_more": {
-      "name": "Learn More",
-      "url": "https://www.shl.com/products/assessments/behavioral-assessments/universal-competency-framework/",
-      "description": "Learn More",
+    "python": {
+      "name": "Python",
+      "url": "https://www.shl.com/solutions/products/python/",
+      "description": "SHL Python assessment",
+      "test_type": "K",
+      "id": "python"
+    },
+    "cpp": {
+      "name": "C++",
+      "url": "https://www.shl.com/solutions/products/cpp/",
+      "description": "SHL C++ assessment",
+      "test_type": "K",
+      "id": "cpp"
+    },
+    "javascript": {
+      "name": "JavaScript",
+      "url": "https://www.shl.com/solutions/products/javascript/",
+      "description": "SHL JavaScript assessment",
+      "test_type": "K",
+      "id": "javascript"
+    },
+    "sql_server": {
+      "name": "SQL Server",
+      "url": "https://www.shl.com/solutions/products/sql-server/",
+      "description": "SHL SQL Server assessment",
+      "test_type": "K",
+      "id": "sql_server"
+    },
+    "html_css": {
+      "name": "HTML/CSS",
+      "url": "https://www.shl.com/solutions/products/html-css/",
+      "description": "SHL HTML/CSS assessment",
+      "test_type": "K",
+      "id": "html_css"
+    },
+    "csharp": {
+      "name": "C#",
+      "url": "https://www.shl.com/solutions/products/c-sharp/",
+      "description": "SHL C# assessment",
+      "test_type": "K",
+      "id": "csharp"
+    },
+    "dotnet_framework": {
+      "name": ".NET Framework",
+      "url": "https://www.shl.com/solutions/products/net-framework/",
+      "description": "SHL .NET Framework assessment",
+      "test_type": "K",
+      "id": "dotnet_framework"
+    },
+    "project_management": {
+      "name": "Project Management",
+      "url": "https://www.shl.com/solutions/products/project-management/",
+      "description": "SHL Project Management assessment",
       "test_type": "G",
-      "id": "learn_more"
+      "id": "project_management"
+    },
+    "sales_achievement_predictor": {
+      "name": "Sales Achievement Predictor",
+      "url": "https://www.shl.com/solutions/products/sales-achievement-predictor/",
+      "description": "SHL Sales Achievement Predictor assessment",
+      "test_type": "G",
+      "id": "sales_achievement_predictor"
+    },
+    "customer_service_assessment": {
+      "name": "Customer Service Assessment",
+      "url": "https://www.shl.com/solutions/products/customer-service-assessment/",
+      "description": "SHL Customer Service Assessment assessment",
+      "test_type": "G",
+      "id": "customer_service_assessment"
     }
   },
   "by_name": {
-    "Occupational Personality Questionnaire (OPQ)": {
-      "name": "Occupational Personality Questionnaire (OPQ)",
-      "url": "https://www.shl.com/products/assessments/personality-assessment/shl-occupational-personality-questionnaire-opq/",
-      "description": "Occupational Personality Questionnaire (OPQ)",
+    "Java 8 (New)": {
+      "name": "Java 8 (New)",
+      "url": "https://www.shl.com/solutions/products/java-8-new/",
+      "description": "SHL Java 8 (New) assessment",
+      "test_type": "K",
+      "id": "java_8_new"
+    },
+    "Java 8": {
+      "name": "Java 8",
+      "url": "https://www.shl.com/solutions/products/java-8/",
+      "description": "SHL Java 8 assessment",
+      "test_type": "K",
+      "id": "java_8"
+    },
+    "OPQ32r": {
+      "name": "OPQ32r",
+      "url": "https://www.shl.com/solutions/products/opq32r/",
+      "description": "SHL OPQ32r assessment",
       "test_type": "P",
-      "id": "occupational_personality_questionnaire_opq"
+      "id": "opq32r"
     },
-    "Global Skills Assessment (GSA)": {
-      "name": "Global Skills Assessment (GSA)",
-      "url": "https://www.shl.com/products/assessments/behavioral-assessments/global-skills-assessment-gsa/",
-      "description": "Global Skills Assessment (GSA)",
-      "test_type": "K",
-      "id": "global_skills_assessment_gsa"
-    },
-    "Job-Focused Assessments (JFA)": {
-      "name": "Job-Focused Assessments (JFA)",
-      "url": "https://www.shl.com/products/assessments/job-focused-assessments/",
-      "description": "Job-Focused Assessments (JFA)",
+    "GSA": {
+      "name": "GSA",
+      "url": "https://www.shl.com/solutions/products/gsa/",
+      "description": "SHL GSA assessment",
       "test_type": "G",
-      "id": "job_focused_assessments_jfa"
+      "id": "gsa"
     },
-    "Motivational Questionnaire (MQ)": {
-      "name": "Motivational Questionnaire (MQ)",
-      "url": "https://www.shl.com/products/assessments/personality-assessment/shl-motivation-questionnaire-mq/",
-      "description": "Motivational Questionnaire (MQ)",
+    "Verify General Ability": {
+      "name": "Verify General Ability",
+      "url": "https://www.shl.com/solutions/products/verify-general-ability/",
+      "description": "SHL Verify General Ability assessment",
       "test_type": "G",
-      "id": "motivational_questionnaire_mq"
+      "id": "verify_general_ability"
     },
-    "Situational Judgment Tests (SJT)": {
-      "name": "Situational Judgment Tests (SJT)",
-      "url": "https://www.shl.com/products/assessments/behavioral-assessments/situation-judgement-tests-sjt/",
-      "description": "Situational Judgment Tests (SJT)",
+    "Verify Logical": {
+      "name": "Verify Logical",
+      "url": "https://www.shl.com/solutions/products/verify-logical/",
+      "description": "SHL Verify Logical assessment",
       "test_type": "G",
-      "id": "situational_judgment_tests_sjt"
+      "id": "verify_logical"
     },
-    "SHL Verify": {
-      "name": "SHL Verify",
-      "url": "https://www.shl.com/products/assessments/cognitive-assessments/",
-      "description": "SHL Verify",
+    "Verify Mechanical": {
+      "name": "Verify Mechanical",
+      "url": "https://www.shl.com/solutions/products/verify-mechanical/",
+      "description": "SHL Verify Mechanical assessment",
       "test_type": "G",
-      "id": "shl_verify"
+      "id": "verify_mechanical"
     },
-    "Assessments": {
-      "name": "Assessments",
-      "url": "https://www.shl.com/products/assessments/",
-      "description": "Assessments",
-      "test_type": "G",
-      "id": "assessments"
+    "Verify Numerical": {
+      "name": "Verify Numerical",
+      "url": "https://www.shl.com/solutions/products/verify-numerical/",
+      "description": "SHL Verify Numerical assessment",
+      "test_type": "N",
+      "id": "verify_numerical"
     },
-    "Behavioral Assessments": {
-      "name": "Behavioral Assessments",
-      "url": "https://www.shl.com/products/assessments/behavioral-assessments/",
-      "description": "Behavioral Assessments",
-      "test_type": "P",
-      "id": "behavioral_assessments"
-    },
-    "Cognitive Assessments": {
-      "name": "Cognitive Assessments",
-      "url": "https://www.shl.com/products/assessments/cognitive-assessments/",
-      "description": "Cognitive Assessments",
-      "test_type": "G",
-      "id": "cognitive_assessments"
-    },
-    "Personality Assessments": {
-      "name": "Personality Assessments",
-      "url": "https://www.shl.com/products/assessments/personality-assessment/",
-      "description": "Personality Assessments",
-      "test_type": "P",
-      "id": "personality_assessments"
-    },
-    "Skills & Simulations": {
-      "name": "Skills & Simulations",
-      "url": "https://www.shl.com/products/assessments/skills-and-simulations/",
-      "description": "Skills & Simulations",
-      "test_type": "K",
-      "id": "skills_simulations"
-    },
-    "Call Center Simulations": {
-      "name": "Call Center Simulations",
-      "url": "https://www.shl.com/products/assessments/skills-and-simulations/call-center-simulations/",
-      "description": "Call Center Simulations",
-      "test_type": "G",
-      "id": "call_center_simulations"
-    },
-    "Business Skills": {
-      "name": "Business Skills",
-      "url": "https://www.shl.com/products/assessments/skills-and-simulations/business-skills/",
-      "description": "Business Skills",
-      "test_type": "K",
-      "id": "business_skills"
-    },
-    "Coding Simulations": {
-      "name": "Coding Simulations",
-      "url": "https://www.shl.com/products/assessments/skills-and-simulations/coding-simulations/",
-      "description": "Coding Simulations",
-      "test_type": "K",
-      "id": "coding_simulations"
-    },
-    "Technical Skills": {
-      "name": "Technical Skills",
-      "url": "https://www.shl.com/products/assessments/skills-and-simulations/technical-skills/",
-      "description": "Technical Skills",
-      "test_type": "K",
-      "id": "technical_skills"
-    },
-    "Language Evaluation": {
-      "name": "Language Evaluation",
-      "url": "https://www.shl.com/products/assessments/skills-and-simulations/language-evaluation/",
-      "description": "Language Evaluation",
+    "Verify Verbal": {
+      "name": "Verify Verbal",
+      "url": "https://www.shl.com/solutions/products/verify-verbal/",
+      "description": "SHL Verify Verbal assessment",
       "test_type": "V",
-      "id": "language_evaluation"
+      "id": "verify_verbal"
     },
-    "Outsourced Assessments (VADC)": {
-      "name": "Outsourced Assessments (VADC)",
-      "url": "https://www.shl.com/products/assessments/assessment-and-development-centers/",
-      "description": "Outsourced Assessments (VADC)",
+    "Verify Professional Interaction": {
+      "name": "Verify Professional Interaction",
+      "url": "https://www.shl.com/solutions/products/verify-professional-interaction/",
+      "description": "SHL Verify Professional Interaction assessment",
       "test_type": "G",
-      "id": "outsourced_assessments_vadc"
+      "id": "verify_professional_interaction"
     },
-    "Learn More": {
-      "name": "Learn More",
-      "url": "https://www.shl.com/products/assessments/behavioral-assessments/universal-competency-framework/",
-      "description": "Learn More",
+    "Python": {
+      "name": "Python",
+      "url": "https://www.shl.com/solutions/products/python/",
+      "description": "SHL Python assessment",
+      "test_type": "K",
+      "id": "python"
+    },
+    "C++": {
+      "name": "C++",
+      "url": "https://www.shl.com/solutions/products/cpp/",
+      "description": "SHL C++ assessment",
+      "test_type": "K",
+      "id": "cpp"
+    },
+    "JavaScript": {
+      "name": "JavaScript",
+      "url": "https://www.shl.com/solutions/products/javascript/",
+      "description": "SHL JavaScript assessment",
+      "test_type": "K",
+      "id": "javascript"
+    },
+    "SQL Server": {
+      "name": "SQL Server",
+      "url": "https://www.shl.com/solutions/products/sql-server/",
+      "description": "SHL SQL Server assessment",
+      "test_type": "K",
+      "id": "sql_server"
+    },
+    "HTML/CSS": {
+      "name": "HTML/CSS",
+      "url": "https://www.shl.com/solutions/products/html-css/",
+      "description": "SHL HTML/CSS assessment",
+      "test_type": "K",
+      "id": "html_css"
+    },
+    "C#": {
+      "name": "C#",
+      "url": "https://www.shl.com/solutions/products/c-sharp/",
+      "description": "SHL C# assessment",
+      "test_type": "K",
+      "id": "csharp"
+    },
+    ".NET Framework": {
+      "name": ".NET Framework",
+      "url": "https://www.shl.com/solutions/products/net-framework/",
+      "description": "SHL .NET Framework assessment",
+      "test_type": "K",
+      "id": "dotnet_framework"
+    },
+    "Project Management": {
+      "name": "Project Management",
+      "url": "https://www.shl.com/solutions/products/project-management/",
+      "description": "SHL Project Management assessment",
       "test_type": "G",
-      "id": "learn_more"
+      "id": "project_management"
+    },
+    "Sales Achievement Predictor": {
+      "name": "Sales Achievement Predictor",
+      "url": "https://www.shl.com/solutions/products/sales-achievement-predictor/",
+      "description": "SHL Sales Achievement Predictor assessment",
+      "test_type": "G",
+      "id": "sales_achievement_predictor"
+    },
+    "Customer Service Assessment": {
+      "name": "Customer Service Assessment",
+      "url": "https://www.shl.com/solutions/products/customer-service-assessment/",
+      "description": "SHL Customer Service Assessment assessment",
+      "test_type": "G",
+      "id": "customer_service_assessment"
     }
   }
 }
