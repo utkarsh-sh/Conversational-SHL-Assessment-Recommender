@@ -77,11 +77,11 @@ async def chat(request: ChatRequest):
             raise HTTPException(status_code=503, detail="Service not ready")
 
         # Assignment hard limit: max 8 total messages (user + assistant)
-       ''' if len(request.messages) > 8:
-            raise HTTPException(
-                status_code=400,
-                detail="Conversation exceeds 8-message limit",
-            ) '''
+        #if len(request.messages) > 8:
+            #raise HTTPException(
+                #status_code=400,
+                #detail="Conversation exceeds 8-message limit",
+            #) 
         
         # Convert messages to dict format
         messages = [{"role": msg.role, "content": msg.content} for msg in request.messages]
